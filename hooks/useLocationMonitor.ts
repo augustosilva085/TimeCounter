@@ -43,6 +43,64 @@ export function useLocationMonitor() {
   const hasAlertedRef = useRef(false);
   const isAtLocationRef = useRef(false);
   const activeLocationIdRef = useRef<string>('1');
+  const lastKnownLocationRef = useRef<Location.LocationObject | null>(null);
+
+  const processLocation = async (location: Location.LocationObject) => {
+    const currentTarget = AVAILABLE_LOCATIONS.find(l => l.id === activeLocationIdRef.current) || AVAILABLE_LOCATIONS[0];
+
+    const distance = getDistanceFromLatLonInM(
+      location.coords.latitude,
+      location.coords.longitude,
+      currentTarget.latitude,
+      currentTarget.longitude
+    );
+
+    const wasAtLocation = isAtLocationRef.current;
+
+    if (distance <= TARGET_RADIUS) {
+      await AsyncStorage.removeItem('START_DATE');
+      if (!wasAtLocation) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      setIsAtLocation(true);
+      isAtLocationRef.current = true;
+      setStartDate(null);
+      setIsWithPerson(false);
+      hasAlertedRef.current = false;
+    } else {
+      setIsAtLocation(false);
+      isAtLocationRef.current = false;
+      const savedDateStr = await AsyncStorage.getItem('START_DATE');
+
+      if (savedDateStr) {
+        setStartDate(new Date(savedDateStr));
+      } else if (!hasAlertedRef.current) {
+        hasAlertedRef.current = true;
+
+        Alert.alert(
+          "Você não está no local! 👀",
+          "Mas vem cá... Você está com a pessoa agora?",
+          [
+            {
+              text: "Sim",
+              onPress: () => setIsWithPerson(true)
+            },
+            {
+              text: "Não",
+              onPress: async () => {
+                const now = new Date();
+                await AsyncStorage.setItem('START_DATE', now.toISOString());
+                setStartDate(now);
+                setIsWithPerson(false);
+              }
+            }
+          ]
+        );
+      }
+    }
+
+    setLoading(false);
+  };
 
   const loadActiveLocation = async () => {
     try {
@@ -59,6 +117,12 @@ export function useLocationMonitor() {
       await AsyncStorage.setItem('ACTIVE_LOCATION_ID', id);
       setActiveLocationId(id);
       activeLocationIdRef.current = id;
+      
+      // Reavalia instantaneamente o cenário se já tivermos um GPS lido
+      if (lastKnownLocationRef.current) {
+        setLoading(true);
+        await processLocation(lastKnownLocationRef.current);
+      }
     } catch (e) { }
   }, []);
 
@@ -90,60 +154,8 @@ export function useLocationMonitor() {
             timeInterval: 5000,
           },
           async (location) => {
-            const currentTarget = AVAILABLE_LOCATIONS.find(l => l.id === activeLocationIdRef.current) || AVAILABLE_LOCATIONS[0];
-
-            const distance = getDistanceFromLatLonInM(
-              location.coords.latitude,
-              location.coords.longitude,
-              currentTarget.latitude,
-              currentTarget.longitude
-            );
-
-            const wasAtLocation = isAtLocationRef.current;
-
-            if (distance <= TARGET_RADIUS) {
-              await AsyncStorage.removeItem('START_DATE');
-              if (!wasAtLocation) {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              }
-              setIsAtLocation(true);
-              isAtLocationRef.current = true;
-              setStartDate(null);
-              setIsWithPerson(false);
-              hasAlertedRef.current = false;
-            } else {
-              setIsAtLocation(false);
-              isAtLocationRef.current = false;
-              const savedDateStr = await AsyncStorage.getItem('START_DATE');
-
-              if (savedDateStr) {
-                setStartDate(new Date(savedDateStr));
-              } else if (!hasAlertedRef.current) {
-                hasAlertedRef.current = true;
-
-                Alert.alert(
-                  "Você não está no local! 👀",
-                  "Mas vem cá... Você está com a pessoa agora?",
-                  [
-                    {
-                      text: "Sim",
-                      onPress: () => setIsWithPerson(true)
-                    },
-                    {
-                      text: "Não",
-                      onPress: async () => {
-                        const now = new Date();
-                        await AsyncStorage.setItem('START_DATE', now.toISOString());
-                        setStartDate(now);
-                        setIsWithPerson(false);
-                      }
-                    }
-                  ]
-                );
-              }
-            }
-
-            setLoading(false);
+            lastKnownLocationRef.current = location;
+            await processLocation(location);
           }
         );
       } catch (error) {
