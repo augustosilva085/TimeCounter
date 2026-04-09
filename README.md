@@ -1,50 +1,72 @@
-# Welcome to your Expo app 👋
+# Time Counter App ⏳❤️
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Um aplicativo maravilhosamente projetado e intimista construído com **React Native** e **Expo**. O "Time Counter" não é apenas um cronômetro comum, ele é um aplicativo focado na saudade e gestão de tempo com pessoas amadas, possuindo suporte nativo a geolocalização e micro-interações belíssimas.
 
-## Get started
+## 📸 Screenshots (Modos Claro e Escuro)
+<p align="center">
+  <img src="./assets/images/print-light.png" width="40%" alt="App rodando no modo claro (Light Mode)"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="./assets/images/print-dark.png" width="40%" alt="App rodando no modo escuro (Dark Mode)"/>
+</p>
+<br>
 
-1. Install dependencies
+## 🌟 Principais Funcionalidades
 
-   ```bash
-   npm install
-   ```
+- **Contador Altamente Preciso**: Acompanha dias, horas, minutos e segundos, renderizados numa bela interface com tipografia premium e de alto contraste.
+- **Geolocalização Inteligente (Geo-fencing)**: Monitora silenciosamente ao fundo e avalia quando você está no mesmo escopo físico que a pessoa amada. O relógio pausa/reseta sozinho quando vocês atingem um "Local Alvo" em comum.
+- **Configurações Discretas (Privacy-First)**: Em vez de menus complexos, uma engrenagem sutil traz controles nativos de tempo e espaço de forma transparente usando *glassmorphism*.
+- **Controle Flexível do Tempo e Espaço**:
+  - ✨ Redefinição manual e independente de histórico por **Date e Time pickers** nativos do dispositivo.
+  - ✨ Seletor de alvos e coordenadas mutáveis dinamicamente.
+- **Animações Fluidas e Feedback Haptico**: Utiliza o motor avançado do `react-native-reanimated` trabalhando nativamente a 60FPS de pulsações e feedback físico (vibração nativa) a cada segundo exato do cronômetro, imitando as batidas de um coração.
+- **Dark/Light Mode e UI Glassmórfica**: Suporte integral a esquemas de cores do sistema acompanhado de transições espelhadas que parecem vidro de verdade (BlurView).
 
-2. Start the app
+## 🚀 Tecnologias e Stacks Utilizadas
 
-   ```bash
-   npx expo start
-   ```
+- **Framework**: [React Native](https://reactnative.dev) + [Expo](https://expo.dev)
+- **Roteamento**: Expo Router
+- **Animações/Motores**: `react-native-reanimated` (Rodando animações direto na Thead Nativa fora da Thread JS).
+- **Haptics/Sensações**: `expo-haptics`
+- **Geolocalização**: `expo-location` (Monitoramento preciso em raio de distância calculado pelo método Haversine).
+- **Gerenciamento de Armazenamento**: `@react-native-async-storage/async-storage`
+- **Pickers Nativos**: `@react-native-community/datetimepicker`
+- **Design de IU e Efeitos**: `expo-blur` (para física do vidro), `expo-linear-gradient`.
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 💻 Como rodar o projeto localmente
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Se você deseja clonar este projeto para testes em sua máquina, siga o padrão de variáveis de ambiente de segurança.
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+**1. Clone o repositório:**
+```sh
+git clone https://github.com/SEU_USUARIO/TimeCounter.git
+cd TimeCounter
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+**2. Configure as Variáveis de Ambiente Seguras:**
+O projeto exige o modelo `.env` para proteção de dados geográficos da aplicação real.
+- Na raiz do projeto, renomeie (ou crie uma cópia) do arquivo `.env.example` para `.env`.
+- Note que o arquivo final `.env` já estará no seu `.gitignore`.
 
-## Learn more
+**3. Instale as dependências:**
+Certifique-se de que tenha Node instalado ou Yarn. No terminal do seu projeto:
+```bash
+npm install
+# ou
+yarn install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+**4. Rode o Expo:**
+```bash
+npx expo start -c
+```
+Pressione `i` para abrir no Simulador iOS, `a` para rodar no Android, ou escaneie o QRCode diretamente do App "Expo Go" do seu celular pessoal!
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
+## 🎨 Sobre a Arquitetura
 
-Join our community of developers creating universal apps.
+Neste projeto de portfólio tentei priorizar a **Performance (Otimização do ciclo de render do React)** com `useRef` atômico para interações da Reanimated que evitam re-renders desnecessários a cada segundo do Timer, e também a separação limpa de conceitos em Hooks persolizados (Custom Hooks) como o `useAppEngine` (Tempo/Animação de núcleo) e `useLocationMonitor` (Gerenciador de GPS/Haversine/AsyncStorage em contexto assíncrono).
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+> *Feito de coração! Sinta-se a vontade para analisar meu código e contribuir!*
