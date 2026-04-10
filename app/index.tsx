@@ -1,16 +1,20 @@
 import { ThemedText } from '@/components/themed-text';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
-import { ActivityIndicator, Modal, StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, TouchableOpacity, View, useColorScheme } from 'react-native';
 import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
 
 import { AnimatedHeart } from '@/components/AnimatedHeart';
+import { DateTimeModal } from '@/components/DateTimeModal';
+import { LocationsModal } from '@/components/LocationsModal';
+import { SettingsModal } from '@/components/SettingsModal';
 import { TimeBox } from '@/components/TimeBox';
 import { useAppEngine } from '@/hooks/useAppEngine';
-import { AVAILABLE_LOCATIONS, useLocationMonitor } from '@/hooks/useLocationMonitor';
+import { useLocationMonitor } from '@/hooks/useLocationMonitor';
+import { styles } from './styles';
+
 
 export default function HomeScreen() {
   const { loading, isAtLocation, isWithPerson, startDate, changeStartDate, activeLocationId, changeActiveLocation } = useLocationMonitor();
@@ -144,162 +148,29 @@ export default function HomeScreen() {
         <Ionicons name="settings-sharp" size={24} color={textColor} style={{ opacity: 0.6 }} />
       </TouchableOpacity>
 
-      <Modal visible={settingsVisible} transparent animationType="fade">
-        <BlurView intensity={colorScheme === 'dark' ? 60 : 80} tint={blurTint} style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]}>
-            <ThemedText style={styles.modalTitle}>Opções</ThemedText>
+      <SettingsModal
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+        onOpenLocations={() => setLocationsVisible(true)}
+        onOpenDatePicker={openDatePicker}
+      />
 
-            <TouchableOpacity style={styles.modalBtn} onPress={() => { setSettingsVisible(false); setLocationsVisible(true); }}>
-              <Ionicons name="location-outline" size={24} color={textColor} />
-              <ThemedText style={styles.modalBtnText}>Alterar Localização</ThemedText>
-            </TouchableOpacity>
+      <LocationsModal
+        visible={locationsVisible}
+        onClose={() => setLocationsVisible(false)}
+        onChangeLocation={changeActiveLocation}
+        activeLocationId={activeLocationId}
+      />
 
-            <TouchableOpacity style={styles.modalBtn} onPress={openDatePicker}>
-              <Ionicons name="time-outline" size={24} color={textColor} />
-              <ThemedText style={styles.modalBtnText}>Redefinir Horário</ThemedText>
-            </TouchableOpacity>
+      <DateTimeModal
+        visible={showPicker}
+        onClose={() => setShowPicker(false)}
+        pickerMode={pickerMode}
+        tempDate={tempDate}
+        onPickerChange={onPickerChange}
+        onConfirm={confirmPicker}
+      />
 
-            <TouchableOpacity style={[styles.modalBtn, { marginTop: 24, justifyContent: 'center', backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }]} onPress={() => setSettingsVisible(false)}>
-              <ThemedText style={[styles.modalBtnText, { opacity: 0.8 }]}>Fechar</ThemedText>
-            </TouchableOpacity>
-          </View>
-        </BlurView>
-      </Modal>
-
-      <Modal visible={locationsVisible} transparent animationType="fade">
-        <BlurView intensity={colorScheme === 'dark' ? 60 : 80} tint={blurTint} style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)' }]}>
-            <ThemedText style={styles.modalTitle}>Escolher Local</ThemedText>
-
-            {AVAILABLE_LOCATIONS.map(loc => (
-              <TouchableOpacity
-                key={loc.id}
-                style={[styles.modalBtn, activeLocationId === loc.id && { backgroundColor: 'rgba(255,255,255,0.2)' }]}
-                onPress={() => {
-                  changeActiveLocation(loc.id);
-                  setLocationsVisible(false);
-                }}
-              >
-                <Ionicons name={activeLocationId === loc.id ? "radio-button-on" : "radio-button-off"} size={24} color={textColor} />
-                <ThemedText style={styles.modalBtnText}>{loc.name}</ThemedText>
-              </TouchableOpacity>
-            ))}
-
-            <TouchableOpacity style={[styles.modalBtn, { marginTop: 24, justifyContent: 'center', backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }]} onPress={() => setLocationsVisible(false)}>
-              <ThemedText style={[styles.modalBtnText, { opacity: 0.8 }]}>Voltar</ThemedText>
-            </TouchableOpacity>
-          </View>
-        </BlurView>
-      </Modal>
-
-      <Modal visible={showPicker} transparent animationType="fade">
-        <BlurView intensity={colorScheme === 'dark' ? 60 : 80} tint={blurTint} style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colorScheme === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)', alignItems: 'center' }]}>
-            <ThemedText style={styles.modalTitle}>
-              {pickerMode === 'date' ? 'Escolha a Data' : 'Escolha o Horário'}
-            </ThemedText>
-
-            <DateTimePicker
-              value={tempDate}
-              mode={pickerMode}
-              is24Hour={true}
-              display="spinner"
-              onChange={onPickerChange}
-              textColor={colorScheme === 'dark' ? '#fff' : '#000'}
-              style={{ width: '100%', height: 200 }}
-            />
-
-            <View style={{ flexDirection: 'row', gap: 16, marginTop: 24, width: '100%' }}>
-              <TouchableOpacity style={[styles.modalBtn, { flex: 1, justifyContent: 'center', backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }]} onPress={() => setShowPicker(false)}>
-                <ThemedText style={[styles.modalBtnText, { opacity: 0.8 }]}>Cancelar</ThemedText>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={[styles.modalBtn, { flex: 1, justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.2)' }]} onPress={confirmPicker}>
-                <ThemedText style={styles.modalBtnText}>{pickerMode === 'date' ? 'Avançar' : 'Confirmar'}</ThemedText>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </BlurView>
-      </Modal>
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  blurContent: {
-    alignItems: 'center',
-    paddingVertical: 56,
-    paddingHorizontal: 20,
-    marginHorizontal: 20,
-    borderRadius: 36,
-    overflow: 'hidden',
-    borderWidth: 1.5,
-  },
-  title: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    lineHeight: 42,
-    fontSize: 24,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    opacity: 0.8,
-    marginBottom: 36,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  counterContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  settingsButton: {
-    position: 'absolute',
-    top: 60,
-    right: 10,
-    zIndex: 10,
-    padding: 10,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  modalContent: {
-    width: '100%',
-    borderRadius: 28,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-  },
-  modalTitle: {
-    fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 24,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  modalBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 16,
-    marginBottom: 12,
-    gap: 16,
-    backgroundColor: 'rgba(255,255,255,0.08)'
-  },
-  modalBtnText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-  },
-});
