@@ -5,21 +5,21 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 
 export const AVAILABLE_LOCATIONS = [
-  { 
-    id: '1', 
-    name: process.env.EXPO_PUBLIC_LOCATION_1_NAME || 'Local 1', 
-    latitude: Number(process.env.EXPO_PUBLIC_LOCATION_1_LAT) || 0, 
-    longitude: Number(process.env.EXPO_PUBLIC_LOCATION_1_LNG) || 0 
+  {
+    id: '1',
+    name: process.env.EXPO_PUBLIC_LOCATION_1_NAME || 'Local 1',
+    latitude: Number(process.env.EXPO_PUBLIC_LOCATION_1_LAT) || 0,
+    longitude: Number(process.env.EXPO_PUBLIC_LOCATION_1_LNG) || 0
   },
-  { 
-    id: '2', 
-    name: process.env.EXPO_PUBLIC_LOCATION_2_NAME || 'Local 2', 
-    latitude: Number(process.env.EXPO_PUBLIC_LOCATION_2_LAT) || 0, 
-    longitude: Number(process.env.EXPO_PUBLIC_LOCATION_2_LNG) || 0 
+  {
+    id: '2',
+    name: process.env.EXPO_PUBLIC_LOCATION_2_NAME || 'Local 2',
+    latitude: Number(process.env.EXPO_PUBLIC_LOCATION_2_LAT) || 0,
+    longitude: Number(process.env.EXPO_PUBLIC_LOCATION_2_LNG) || 0
   },
 ];
 
-const TARGET_RADIUS = 100; // metros
+const TARGET_RADIUS_IN_METERS = 100;
 
 function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371000;
@@ -57,7 +57,7 @@ export function useLocationMonitor() {
 
     const wasAtLocation = isAtLocationRef.current;
 
-    if (distance <= TARGET_RADIUS) {
+    if (distance <= TARGET_RADIUS_IN_METERS) {
       await AsyncStorage.removeItem('START_DATE');
       if (!wasAtLocation) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -117,8 +117,7 @@ export function useLocationMonitor() {
       await AsyncStorage.setItem('ACTIVE_LOCATION_ID', id);
       setActiveLocationId(id);
       activeLocationIdRef.current = id;
-      
-      // Reavalia instantaneamente o cenário se já tivermos um GPS lido
+
       if (lastKnownLocationRef.current) {
         setLoading(true);
         await processLocation(lastKnownLocationRef.current);

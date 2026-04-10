@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
 import * as Haptics from 'expo-haptics';
+import { useEffect, useRef, useState } from 'react';
 import { Easing, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 
 export function useAppEngine(startDate: Date | null) {
@@ -10,9 +10,7 @@ export function useAppEngine(startDate: Date | null) {
   const lastSecondsRef = useRef(-1);
 
   useEffect(() => {
-    // Orquestra a pulsação sincronizada (Haptic + Visual) a cada segundo
     const interval = setInterval(() => {
-      // Haptics "tum-tum" combinando com os picos da animação visual (150ms e 450ms)
       setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), 150);
       setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light), 450);
 
@@ -20,7 +18,7 @@ export function useAppEngine(startDate: Date | null) {
         withTiming(1.25, { duration: 150, easing: Easing.out(Easing.ease) }),
         withTiming(1, { duration: 150, easing: Easing.in(Easing.ease) }),
         withTiming(1.25, { duration: 150, easing: Easing.out(Easing.ease) }),
-        withTiming(1, { duration: 550, easing: Easing.in(Easing.ease) }) // Total 1000ms
+        withTiming(1, { duration: 550, easing: Easing.in(Easing.ease) })
       );
 
       if (startDate) {
